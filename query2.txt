@@ -1,0 +1,37 @@
+db.getCollection("rate").aggregate(
+    [
+        {
+            "$match" : {
+                "rating" : {
+                    "$gt" : NumberInt(9)
+                }
+            }
+        }, 
+        {
+            "$lookup" : {
+                "from" : "anime",
+                "localField" : "anime_id",
+                "foreignField" : "anime_id",
+                "as" : "anime_rating"
+            }
+        }, 
+        {
+            "$match" : {
+                "anime_rating.rating" : {
+                    "$lt" : NumberInt(5)
+                }
+            }
+        }, 
+        {
+            "$group" : {
+                "_id" : null,
+                "myCount" : {
+                    "$sum" : NumberInt(1)
+                }
+            }
+        }
+    ], 
+    {
+        "allowDiskUse" : false
+    }
+);

@@ -1,0 +1,28 @@
+db.rate.aggregate([
+
+ {
+   $match: { 
+     rating: {$gt: -1}
+    }
+ },
+
+  {
+    $lookup: {
+      from: "anime",
+      localField: "anime_id",
+      foreignField: "anime_id",
+      as: "lookupResult"
+    }
+  },
+  {
+    $unwind: "$lookupResult"
+  },
+  {
+    $group: {
+      _id: "$lookupResult.type",
+      count: { $sum: 1 },
+      Max: { $max: "$lookupResult.rating" },
+      Min: { $min: "$lookupResult.rating" }
+    }
+  }
+]).explain("executionStats")

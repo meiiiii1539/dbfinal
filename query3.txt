@@ -1,0 +1,69 @@
+db.rate.aggregate(
+    [
+        {
+          $match: {
+            rating: {$gt: -1}
+          }
+        },
+        {
+          $group: {
+            _id: "$user_id",
+            cout: {$sum: 1},
+            id_rate: {
+                $push: {
+                    anime_id: "$anime_id",
+                    rating: "$rating"
+                }
+            }
+          }
+        },
+        {
+          $unwind: "$id_rate"
+        },
+        {
+          $lookup: {
+            from: "anime",
+            localField: "id_rate.anime_id",
+            foreignField: "anime_id",
+            as: "anime_data"
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            anime_id: "$id_rate.anime_id",
+            rating: "$id_rate.rating",
+            genre: {$first: "$anime_data.genre"}
+          }
+        },
+        {
+          $unwind: "$genre"
+        },
+        {
+          $group: {
+            _id: {user_id: "$_id", genre: "$genre"},
+            ave: {$avg: "$rating"}
+          }
+        },
+        {
+          $project: {
+            _id: "$_id.user_id",
+            genre: "$_id.genre",
+            ave:1
+          }
+        },
+        {
+          $group: {
+            _id: "$_id",
+            genre_ave: {$push: {genre: "$genre", ave: "$ave"}}
+          }
+        },
+    ]
+)
+
+
+
+
+
+
+
